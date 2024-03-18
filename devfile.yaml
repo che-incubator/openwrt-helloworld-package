@@ -1,0 +1,87 @@
+schemaVersion: 2.1.0
+metadata:
+  generateName: openwrt-helloworld
+attributes:
+  controller.devfile.io/storage-type: per-user
+projects:
+  - attributes:
+      source-origin: branch
+    name: openwrt
+    git:
+      remotes:
+        origin: https://github.com/openwrt/openwrt.git
+      checkoutFrom:
+        revision: v23.05.0-rc1
+  - name: openwrt-helloworld
+    git:
+      remotes:
+        origin: https://github.com/che-incubator/openwrt-helloworld-package.git
+components:
+  - name: runtime
+    container:
+      image: quay.io/che-incubator/openwrt-builder:latest
+      memoryLimit: 10G
+      memoryRequest: 512Mi
+      cpuRequest: 1000m
+      cpuLimit: 5000m
+commands:
+  - id: installpackagedefinitions
+    exec:
+      label: "install all its package definitions"
+      component: runtime
+      workingDir: ${PROJECTS_ROOT}/openwrt
+      commandLine: "scripts/feeds update -a -f && scripts/feeds install -a -f"
+      group:
+        kind: build
+  - id: linkhelloworldpackage
+    exec:
+      label: "link helloworld package"
+      component: runtime
+      commandLine: "ln -sf /projects/openwrt-helloworld/package/helloworld /projects/openwrt/package/helloworld"
+      group:
+        kind: build
+  - id: unlinkhelloworldpackage
+    exec:
+      label: "unlink helloworld package"
+      component: runtime
+      commandLine: "unlink /projects/openwrt/package/helloworld"
+      group:
+        kind: build
+  - id: linkconfigfile
+    exec:
+      label: "link config file"
+      component: runtime
+      commandLine: "ln -sf /projects/openwrt-helloworld/.config /projects/openwrt/.config"
+      group:
+        kind: build
+  - id: unlinkconfigfile
+    exec:
+      label: "unlink config file"
+      component: runtime
+      commandLine: "unlink openwrt/.config"
+      group:
+        kind: build
+  - id: menuconfig
+    exec:
+      label: "Select configuration for the toolchain"
+      component: runtime
+      workingDir: ${PROJECTS_ROOT}/openwrt
+      commandLine: "make menuconfig"
+      group:
+        kind: build
+  - id: buildhelloworldpackage
+    exec:
+      label: "Build helloworld package"
+      component: runtime
+      workingDir: ${PROJECTS_ROOT}/openwrt
+      commandLine: "make package/helloworld/{clean,compile} TARGET_OPTIMIZATION='-g -O0'"
+      group:
+        kind: build
+  - id: buildallpackages
+    exec:
+      label: "Build all packages and the kernel"
+      component: runtime
+      workingDir: ${PROJECTS_ROOT}/openwrt
+      commandLine: "make -j4"
+      group:
+        kind: build
