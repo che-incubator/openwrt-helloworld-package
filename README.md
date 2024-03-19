@@ -2,7 +2,7 @@
 
 ## Description
 
-This is the simple C++ OpenWrt program to print the phrase "Hello, World!" to the console.
+This is the simple C++ OpenWrt package to print the phrase "Hello, World!" to the console.
 
 ## Usage
 

@@ -8,7 +8,7 @@ int main(void) {
 
     do {
         // loop body
-         cout << i << ":Hello World!!!" << endl;
+         cout << i << ":Hello World!" << endl;
 
         // update expression
         i++;

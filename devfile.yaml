@@ -2,7 +2,7 @@ schemaVersion: 2.1.0
 metadata:
   generateName: openwrt-helloworld
 attributes:
-  controller.devfile.io/storage-type: per-user
+  controller.devfile.io/storage-type: ephemeral
 projects:
   - attributes:
       source-origin: branch
@@ -20,14 +20,23 @@ components:
   - name: runtime
     container:
       image: quay.io/che-incubator/openwrt-builder:latest
-      memoryLimit: 10G
+      memoryLimit: 18G
       memoryRequest: 512Mi
+      cpuLimit: 10000m
       cpuRequest: 1000m
-      cpuLimit: 5000m
+      endpoints:
+        - exposure: public
+          name: file-server
+          protocol: http
+          targetPort: 8080
+          path: /bin/targets
+      env:
+        - name: KUBEDOCK_ENABLED
+          value: "true"
 commands:
   - id: installpackagedefinitions
     exec:
-      label: "install all its package definitions"
+      label: "Install all package definitions"
       component: runtime
       workingDir: ${PROJECTS_ROOT}/openwrt
       commandLine: "scripts/feeds update -a -f && scripts/feeds install -a -f"
@@ -35,7 +44,7 @@ commands:
         kind: build
   - id: linkhelloworldpackage
     exec:
-      label: "link helloworld package"
+      label: "Link helloworld package"
       component: runtime
       commandLine: "ln -sf /projects/openwrt-helloworld/package/helloworld /projects/openwrt/package/helloworld"
       group:
@@ -49,14 +58,14 @@ commands:
         kind: build
   - id: linkconfigfile
     exec:
-      label: "link config file"
+      label: "Link config file"
       component: runtime
-      commandLine: "ln -sf /projects/openwrt-helloworld/.config /projects/openwrt/.config"
+      commandLine: "ln -sf /projects/openwrt-helloworld/configs/.x86-generic.config /projects/openwrt/.config"
       group:
         kind: build
   - id: unlinkconfigfile
     exec:
-      label: "unlink config file"
+      label: "Unlink config file"
       component: runtime
       commandLine: "unlink openwrt/.config"
       group:
@@ -82,6 +91,22 @@ commands:
       label: "Build all packages and the kernel"
       component: runtime
       workingDir: ${PROJECTS_ROOT}/openwrt
-      commandLine: "make -j4"
+      commandLine: "make -j8"
+      group:
+        kind: build
+  - id: serverstart
+    exec:
+      label: "Start the http-server"
+      component: runtime
+      workingDir: ${PROJECTS_ROOT}
+      commandLine: "npx http-server -a 0.0.0.0 -p 8080 -o bin/targets"
+      group:
+        kind: build
+  - id: imagebuild
+    exec:
+      label: "Image build"
+      component: runtime
+      workingDir: ${PROJECTS_ROOT}
+      commandLine: "podman import bin/targets/x86/generic/openwrt-x86-generic-generic-rootfs.tar.gz openwrt-x86-generic-generic-rootfs:latest"
       group:
         kind: build

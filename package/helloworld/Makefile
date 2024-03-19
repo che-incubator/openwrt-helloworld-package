@@ -19,13 +19,13 @@ include $(INCLUDE_DIR)/package.mk
 define Package/$(PKG_NAME)
   SECTION:=utils
   CATEGORY:=Utilities
-  TITLE:=helloworld printing program in C++
+  TITLE:=helloworld printing C++ program
   DEPENDS:= +libc +libstdcpp
 endef
 
 # This is the build section. It specifies the package details.
 define Package/helloworldcxx/description
- It is a helloworld.
+ It is a "Hello World!" printing C++ program.
 endef
 
 # Specify what needs to be done to prepare for building the package.
