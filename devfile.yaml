@@ -4,18 +4,13 @@ metadata:
 attributes:
   controller.devfile.io/storage-type: ephemeral
 projects:
-  - attributes:
-      source-origin: branch
-    name: openwrt
-    git:
-      remotes:
-        origin: https://github.com/openwrt/openwrt.git
-      checkoutFrom:
-        revision: v23.05.0-rc1
   - name: openwrt-helloworld
     git:
       remotes:
         origin: https://github.com/che-incubator/openwrt-helloworld-package.git
+  - name: openwrt
+    zip:
+      location: https://github.com/openwrt/openwrt/archive/refs/tags/v23.05.0-rc1.zip
 components:
   - name: runtime
     container:
@@ -83,7 +78,7 @@ commands:
       label: "Build helloworld package"
       component: runtime
       workingDir: ${PROJECTS_ROOT}/openwrt
-      commandLine: "make package/helloworld/{clean,compile} TARGET_OPTIMIZATION='-g -O0'"
+      commandLine: "make package/helloworld/{clean,compile} V=s CONFIG_DEBUG=y"
       group:
         kind: build
   - id: buildallpackages
