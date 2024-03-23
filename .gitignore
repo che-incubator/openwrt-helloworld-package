@@ -1,3 +1,11 @@
+output/*
+
+*.gz
+*.xz
+*.bz2
+*.tar
+*.zip
+
 # Prerequisites
 *.d
 

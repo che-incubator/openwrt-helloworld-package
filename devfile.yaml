@@ -1,6 +1,10 @@
-schemaVersion: 2.1.0
+schemaVersion: 2.2.2
 metadata:
   generateName: openwrt-helloworld
+variables:
+  imageRegistry: 'quay.io'
+  imageName: 'openwrt-x86-generic-generic-rootfs'
+  imageVersion: 'latest'
 attributes:
   controller.devfile.io/storage-type: ephemeral
 projects:
@@ -15,19 +19,24 @@ components:
   - name: runtime
     container:
       image: quay.io/che-incubator/openwrt-builder:latest
-      memoryLimit: 18G
+      memoryLimit: 22G
       memoryRequest: 512Mi
       cpuLimit: 10000m
       cpuRequest: 1000m
+      mountSources: true
+      env:
+        - name: OPENSHIFT_IMAGE_REGISTRY
+          value: "image-registry.openshift-image-registry.svc:5000"
+        - name: IMAGE
+          value: numberguess
+        - name: KUBEDOCK_ENABLED
+          value: "true"
       endpoints:
         - exposure: public
           name: file-server
           protocol: http
           targetPort: 8080
           path: /bin/targets
-      env:
-        - name: KUBEDOCK_ENABLED
-          value: "true"
 commands:
   - id: installpackagedefinitions
     exec:
@@ -41,28 +50,32 @@ commands:
     exec:
       label: "Link helloworld package"
       component: runtime
-      commandLine: "ln -sf /projects/openwrt-helloworld/package/helloworld /projects/openwrt/package/helloworld"
+      workingDir: ${PROJECTS_ROOT}
+      commandLine: "ln -sf openwrt-helloworld/package/helloworld openwrt/package/helloworld"
       group:
         kind: build
   - id: unlinkhelloworldpackage
     exec:
-      label: "unlink helloworld package"
+      label: "Unlink helloworld package"
       component: runtime
-      commandLine: "unlink /projects/openwrt/package/helloworld"
+      workingDir: ${PROJECTS_ROOT}
+      commandLine: "unlink openwrt/package/helloworld"
       group:
         kind: build
-  - id: linkconfigfile
+  - id: copyconfig
     exec:
-      label: "Link config file"
+      label: "Copy diff-config to openwrt"
       component: runtime
-      commandLine: "ln -sf /projects/openwrt-helloworld/configs/.x86-generic.config /projects/openwrt/.config"
+      workingDir: ${PROJECTS_ROOT}
+      commandLine: "cp -f openwrt-helloworld/configs/.x86-generic.config openwrt/.config"
       group:
         kind: build
-  - id: unlinkconfigfile
+  - id: savedifconfig
     exec:
-      label: "Unlink config file"
+      label: "Save diff-config to openwrt-helloworld"
       component: runtime
-      commandLine: "unlink openwrt/.config"
+      workingDir: ${PROJECTS_ROOT}
+      commandLine: "openwrt/scripts/diffconfig.sh > openwrt-helloworld/configs/.x86-generic.config"
       group:
         kind: build
   - id: menuconfig
@@ -85,23 +98,42 @@ commands:
     exec:
       label: "Build all packages and the kernel"
       component: runtime
-      workingDir: ${PROJECTS_ROOT}/openwrt
-      commandLine: "make -j8"
+      workingDir: ${PROJECTS_ROOT}/openwrt-helloworld
+      commandLine: "scripts/build.sh"
       group:
         kind: build
   - id: serverstart
     exec:
       label: "Start the http-server"
       component: runtime
-      workingDir: ${PROJECTS_ROOT}
+      workingDir: ${PROJECTS_ROOT}/openwrt
       commandLine: "npx http-server -a 0.0.0.0 -p 8080 -o bin/targets"
       group:
         kind: build
-  - id: imagebuild
+  - id: openshift-registry-login
     exec:
-      label: "Image build"
+      label: Login into OpenShift registry
       component: runtime
+      commandLine: podman login --tls-verify=false -u kubeadmin -p $(oc whoami -t) ${OPENSHIFT_IMAGE_REGISTRY} && oc login --token=$(oc whoami -t)
       workingDir: ${PROJECTS_ROOT}
-      commandLine: "podman import bin/targets/x86/generic/openwrt-x86-generic-generic-rootfs.tar.gz openwrt-x86-generic-generic-rootfs:latest"
       group:
         kind: build
+        isDefault: false
+  - id: build-runtime-image
+    exec:
+      label: Build Runtime Image for Openshift
+      component: runtime
+      workingDir: ${PROJECTS_ROOT}/openwrt-helloworld
+      commandLine: export OPENSHIFT_NS=$(oc project -q) && podman build -f dockerfiles/Dockerfile -t ${OPENSHIFT_IMAGE_REGISTRY}/${OPENSHIFT_NS}/${IMAGE} .
+      group:
+        kind: build
+        isDefault: false
+  - id: push-image
+    exec:
+      label: Push Image into OpenShift registry
+      component: runtime
+      workingDir: ${PROJECTS_ROOT}
+      commandLine: export OPENSHIFT_NS=$(oc project -q) && podman tag ${OPENSHIFT_IMAGE_REGISTRY}/${OPENSHIFT_NS}/${IMAGE} ${OPENSHIFT_IMAGE_REGISTRY}/${OPENSHIFT_NS}/${IMAGE}:latest && podman push --tls-verify=false ${OPENSHIFT_IMAGE_REGISTRY}/${OPENSHIFT_NS}/${IMAGE}:latest
+      group:
+        kind: build
+        isDefault: false
