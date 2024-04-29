@@ -28,7 +28,7 @@ components:
         - name: OPENSHIFT_IMAGE_REGISTRY
           value: "image-registry.openshift-image-registry.svc:5000"
         - name: IMAGE
-          value: numberguess
+          value: imageName
         - name: KUBEDOCK_ENABLED
           value: "true"
       endpoints:
@@ -51,7 +51,7 @@ commands:
       label: "Link helloworld package"
       component: runtime
       workingDir: ${PROJECTS_ROOT}
-      commandLine: "ln -sf openwrt-helloworld/package/helloworld openwrt/package/helloworld"
+      commandLine: "ln -sr openwrt-helloworld/package/helloworld openwrt/package/"
       group:
         kind: build
   - id: unlinkhelloworldpackage
@@ -75,15 +75,7 @@ commands:
       label: "Save diff-config to openwrt-helloworld"
       component: runtime
       workingDir: ${PROJECTS_ROOT}
-      commandLine: "openwrt/scripts/diffconfig.sh > openwrt-helloworld/configs/.x86-generic.config"
-      group:
-        kind: build
-  - id: menuconfig
-    exec:
-      label: "Select configuration for the toolchain"
-      component: runtime
-      workingDir: ${PROJECTS_ROOT}/openwrt
-      commandLine: "make menuconfig"
+      commandLine: "/projects/openwrt/scripts/diffconfig.sh > /projects/openwrt-helloworld/configs/.x86-generic.config"
       group:
         kind: build
   - id: buildhelloworldpackage
