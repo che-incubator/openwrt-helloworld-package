@@ -29,8 +29,11 @@ components:
   - name: qemu
     container:
       image: quay.io/che-incubator/openwrt-runner:latest
+      command: ['tail', '-f', '/dev/null']
       memoryLimit: 2G
       memoryRequest: 256Mi
+      cpuLimit: 1000m
+      cpuRequest: 500m
       mountSources: true
       endpoints:
         - exposure: public
