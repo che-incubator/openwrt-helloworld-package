@@ -1,10 +1,6 @@
 schemaVersion: 2.2.2
 metadata:
   generateName: openwrt-helloworld
-variables:
-  imageRegistry: 'quay.io'
-  imageName: 'openwrt-x86-generic-generic-rootfs'
-  imageVersion: 'latest'
 attributes:
   controller.devfile.io/storage-type: ephemeral
 projects:
@@ -19,24 +15,28 @@ components:
   - name: runtime
     container:
       image: quay.io/che-incubator/openwrt-builder:latest
-      memoryLimit: 22G
+      memoryLimit: 20G
       memoryRequest: 512Mi
       cpuLimit: 10000m
       cpuRequest: 1000m
       mountSources: true
-      env:
-        - name: OPENSHIFT_IMAGE_REGISTRY
-          value: "image-registry.openshift-image-registry.svc:5000"
-        - name: IMAGE
-          value: imageName
-        - name: KUBEDOCK_ENABLED
-          value: "true"
       endpoints:
         - exposure: public
           name: file-server
           protocol: http
           targetPort: 8080
           path: /bin/targets
+  - name: qemu
+    container:
+      image: quay.io/che-incubator/openwrt-runner:latest
+      memoryLimit: 2G
+      memoryRequest: 256Mi
+      mountSources: true
+      endpoints:
+        - exposure: public
+          name: luci
+          protocol: http
+          targetPort: 30080
 commands:
   - id: installpackagedefinitions
     exec:
@@ -94,6 +94,14 @@ commands:
       commandLine: "scripts/build.sh"
       group:
         kind: build
+  - id: qemustart
+    exec:
+      label: Running OpenWRT in a QEMU VM
+      component: qemu
+      workingDir: ${PROJECTS_ROOT}
+      commandLine: gunzip --stdout /projects/openwrt-helloworld/output/openwrt-*combined.img.gz > /projects/openwrt-helloworld/output/image.raw && /usr/local/bin/entrypoint.sh
+      group:
+        kind: build
   - id: serverstart
     exec:
       label: "Start the http-server"
@@ -102,30 +110,3 @@ commands:
       commandLine: "npx http-server -a 0.0.0.0 -p 8080 -o bin/targets"
       group:
         kind: build
-  - id: openshift-registry-login
-    exec:
-      label: Login into OpenShift registry
-      component: runtime
-      commandLine: podman login --tls-verify=false -u kubeadmin -p $(oc whoami -t) ${OPENSHIFT_IMAGE_REGISTRY} && oc login --token=$(oc whoami -t)
-      workingDir: ${PROJECTS_ROOT}
-      group:
-        kind: build
-        isDefault: false
-  - id: build-runtime-image
-    exec:
-      label: Build Runtime Image for Openshift
-      component: runtime
-      workingDir: ${PROJECTS_ROOT}/openwrt-helloworld
-      commandLine: export OPENSHIFT_NS=$(oc project -q) && podman build -f dockerfiles/Dockerfile -t ${OPENSHIFT_IMAGE_REGISTRY}/${OPENSHIFT_NS}/${IMAGE} .
-      group:
-        kind: build
-        isDefault: false
-  - id: push-image
-    exec:
-      label: Push Image into OpenShift registry
-      component: runtime
-      workingDir: ${PROJECTS_ROOT}
-      commandLine: export OPENSHIFT_NS=$(oc project -q) && podman tag ${OPENSHIFT_IMAGE_REGISTRY}/${OPENSHIFT_NS}/${IMAGE} ${OPENSHIFT_IMAGE_REGISTRY}/${OPENSHIFT_NS}/${IMAGE}:latest && podman push --tls-verify=false ${OPENSHIFT_IMAGE_REGISTRY}/${OPENSHIFT_NS}/${IMAGE}:latest
-      group:
-        kind: build
-        isDefault: false
