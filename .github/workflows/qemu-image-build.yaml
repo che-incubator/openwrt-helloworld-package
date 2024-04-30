@@ -1,4 +1,4 @@
-name: Build of the CDE container image
+name: Build of the QEMU container image
 
 on:
   push:
@@ -10,8 +10,6 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-      - name: Set up QEMU
-        uses: docker/setup-qemu-action@v2
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v2
       - name: Login to quay.io
@@ -24,6 +22,6 @@ jobs:
         uses: docker/build-push-action@v4
         with:
           context: .
-          file: .devfile.Dockerfile
+          file: dockerfiles/qemu.Dockerfile
           push: true
-          tags: quay.io/che-incubator/openwrt-builder:latest
+          tags: quay.io/che-incubator/openwrt-runner:latest
