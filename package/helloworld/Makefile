@@ -8,7 +8,6 @@ PKG_RELEASE:=1
 PKG_SOURCE_SUBDIR:=$(PKG_NAME)-$(PKG_VERSION).$(PKG_RELEASE)
 PKG_BUILD_DIR:=$(BUILD_DIR)/$(PKG_SOURCE_SUBDIR)
 
-PKG_MAINTAINER:=Oleksii Orel <oorel@redhat.com>
 PKG_LICENSE:=EPL-2.0
 PKG_LICENSE_FILES:=LICENSE
 
@@ -62,7 +61,7 @@ endef
 # directory if it does not already exist.  Likewise $(INSTALL_BIN) contains the
 # command to copy the binary file from its current location (in our case the build
 # directory) to the install directory.
-define Package/$(PKG_NAME)/install
+define Package/helloworld/install
 	$(INSTALL_DIR) $(1)/bin
 	$(INSTALL_BIN) $(PKG_BUILD_DIR)/helloworldpp $(1)/bin/
 endef

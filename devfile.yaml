@@ -10,12 +10,12 @@ projects:
         origin: https://github.com/che-incubator/openwrt-helloworld-package.git
   - name: openwrt
     zip:
-      location: https://github.com/openwrt/openwrt/archive/refs/tags/v23.05.0-rc1.zip
+      location: https://github.com/openwrt/openwrt/archive/refs/tags/v21.02.3.zip
 components:
   - name: runtime
     container:
       image: quay.io/che-incubator/openwrt-builder:latest
-      memoryLimit: 20G
+      memoryLimit: 6656Mi
       memoryRequest: 512Mi
       cpuLimit: 10000m
       cpuRequest: 1000m
@@ -23,78 +23,77 @@ components:
       endpoints:
         - exposure: public
           name: file-server
-          protocol: http
+          protocol: https
           targetPort: 8080
           path: /bin/targets
   - name: qemu
     container:
       image: quay.io/che-incubator/openwrt-runner:latest
-      command: ['tail', '-f', '/dev/null']
-      memoryLimit: 2G
+      memoryLimit: 1536Mi
       memoryRequest: 256Mi
-      cpuLimit: 1000m
+      cpuLimit: 1500m
       cpuRequest: 500m
       mountSources: true
       endpoints:
         - exposure: public
           name: luci
-          protocol: http
+          protocol: https
           targetPort: 30080
 commands:
   - id: installpackagedefinitions
     exec:
-      label: "Install all package definitions"
+      label: Install all package definitions
       component: runtime
       workingDir: ${PROJECTS_ROOT}/openwrt
-      commandLine: "scripts/feeds update -a -f && scripts/feeds install -a -f"
+      commandLine: scripts/feeds update -a -f && scripts/feeds install -a -f
       group:
         kind: build
   - id: linkhelloworldpackage
     exec:
-      label: "Link helloworld package"
+      label: Link helloworld package
       component: runtime
       workingDir: ${PROJECTS_ROOT}
-      commandLine: "ln -sr openwrt-helloworld/package/helloworld openwrt/package/"
+      commandLine: ln -sr openwrt-helloworld/package/helloworld openwrt/package/
       group:
         kind: build
   - id: unlinkhelloworldpackage
     exec:
-      label: "Unlink helloworld package"
+      label: Unlink helloworld package
       component: runtime
       workingDir: ${PROJECTS_ROOT}
-      commandLine: "unlink openwrt/package/helloworld"
+      commandLine: unlink /projects/openwrt/package/helloworld
       group:
         kind: build
   - id: copyconfig
     exec:
-      label: "Copy diff-config to openwrt"
+      label: Copy diff-config to OpenWRT
       component: runtime
       workingDir: ${PROJECTS_ROOT}
-      commandLine: "cp -f openwrt-helloworld/configs/.x86-generic.config openwrt/.config"
+      commandLine: cp -f openwrt-helloworld/configs/.x86-generic.config openwrt/.config
       group:
         kind: build
   - id: savedifconfig
     exec:
-      label: "Save diff-config to openwrt-helloworld"
+      label: Save diff-config to openwrt-helloworld
       component: runtime
-      workingDir: ${PROJECTS_ROOT}
-      commandLine: "/projects/openwrt/scripts/diffconfig.sh > /projects/openwrt-helloworld/configs/.x86-generic.config"
+      workingDir: ${PROJECTS_ROOT}/openwrt
+      commandLine: scripts/diffconfig.sh > /projects/openwrt-helloworld/configs/.x86-generic.config
       group:
         kind: build
   - id: buildhelloworldpackage
     exec:
-      label: "Build helloworld package"
+      label: Build helloworld package
       component: runtime
       workingDir: ${PROJECTS_ROOT}/openwrt
-      commandLine: "make package/helloworld/{clean,compile} V=s CONFIG_DEBUG=y"
+      commandLine: make package/helloworld/compile V=s CONFIG_DEBUG=y
       group:
         kind: build
   - id: buildallpackages
     exec:
-      label: "Build all packages and the kernel"
+      label: Build all packages and the kernel
       component: runtime
       workingDir: ${PROJECTS_ROOT}/openwrt-helloworld
-      commandLine: "scripts/build.sh"
+      commandLine: scripts/build.sh
       group:
         kind: build
   - id: qemustart
@@ -102,14 +101,30 @@ commands:
       label: Running OpenWRT in a QEMU VM
       component: qemu
       workingDir: ${PROJECTS_ROOT}
-      commandLine: gunzip --stdout /projects/openwrt-helloworld/output/openwrt-*combined.img.gz > /projects/openwrt-helloworld/output/image.raw && /usr/local/bin/entrypoint.sh
+      commandLine: /usr/local/bin/prepare-and-run-vm.sh
+      group:
+        kind: build
+  - id: sshaccess
+    exec:
+      label: SSH access for OpenWRT
+      component: qemu
+      workingDir: ${PROJECTS_ROOT}
+      commandLine: sshpass -p pass1234 ssh root@localhost -p 30022
+      group:
+        kind: build
+  - id: removeskeys
+    exec:
+      label: Removes all keys belonging to OpenWRT SSH access from a known_hosts file
+      component: qemu
+      workingDir: ${PROJECTS_ROOT}
+      commandLine: ssh-keygen -R [localhost]:30022
       group:
         kind: build
   - id: serverstart
     exec:
-      label: "Start the http-server"
+      label: Start Http-Server
       component: runtime
       workingDir: ${PROJECTS_ROOT}/openwrt
-      commandLine: "npx http-server -a 0.0.0.0 -p 8080 -o bin/targets"
+      commandLine: npx http-server -a 0.0.0.0 -p 8080 -o bin/targets
       group:
         kind: build
