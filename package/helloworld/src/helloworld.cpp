@@ -9,12 +9,12 @@ using namespace std;
 // C++ program to Demonstrate do-while loop
 int main(void)
 {
-	string s = "Hello, World! This is a C++ test";
+	string s = "Hello, World!";
     int8_t i = 1;
 
     do {
         // loop body
-         cout << i << s << endl;
+         cout << s << endl;
 
         // update expression
         i++;

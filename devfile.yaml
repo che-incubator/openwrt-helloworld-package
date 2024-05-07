@@ -109,12 +109,12 @@ commands:
       label: SSH access for OpenWRT
       component: qemu
       workingDir: ${PROJECTS_ROOT}
-      commandLine: sshpass -p pass1234 ssh root@localhost -p 30022
+      commandLine: sshpass -p pass1234 ssh -o StrictHostKeyChecking=no root@localhost -p 30022
       group:
         kind: build
   - id: removeskeys
     exec:
-      label: Removes all keys belonging to OpenWRT SSH access from a known_hosts file
+      label: Removes all keys belonging to OpenWRT SSH
       component: qemu
       workingDir: ${PROJECTS_ROOT}
       commandLine: ssh-keygen -R [localhost]:30022

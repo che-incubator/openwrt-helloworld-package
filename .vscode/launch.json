@@ -1,19 +1,21 @@
 {
   "version": "0.2.0",
-  "configurations": [{
-    "type": "cppdbg",
-    "request": "launch",
-    "program": "${workspaceFolder}/vmlinux",
-    "cwd": "${workspaceFolder}",
-    "stopAtEntry": true,
-    "stopAtConnect": true,
-    "MIMode": "gdb",
-    "miDebuggerPath": "/usr/bin/gdb",
-    "miDebuggerServerAddress": "localhost:1234",
-    "setupCommands": [{
-      "description": "Enable pretty-printing for gdb",
-      "text": "-enable-pretty-printing",
-      "ignoreFailures": true
-    }]
-  }]
+  "configurations": [
+    {
+      "name": "(gdb) Attach",
+      "type": "cppdbg",
+      "request": "attach",
+      "program": "${path to binary}",
+      "processId": "${process id to attach to}",
+      "MIMode": "gdb",
+      "cwd":"${workspaceRoot}",
+      "setupCommands": [
+        {
+          "description": "Enable pretty-printing for gdb",
+          "text": "-enable-pretty-printing",
+          "ignoreFailures": true
+        }
+      ]
+    }
+  ]
 }
