@@ -39,6 +39,10 @@ components:
           name: luci
           protocol: https
           targetPort: 30080
+        - exposure: public
+          name: ssh
+          protocol: tcp
+          targetPort: 30022
 commands:
   - id: installpackagedefinitions
     exec:
@@ -69,7 +73,7 @@ commands:
       label: Copy diff-config to OpenWRT
       component: runtime
       workingDir: ${PROJECTS_ROOT}
-      commandLine: cp -f openwrt-helloworld/configs/.x86-generic.config openwrt/.config && cd openwrt && make defconfig
+      commandLine: cp -f openwrt-helloworld/configs/.x86-generic.config openwrt/.config
       group:
         kind: build
   - id: savedifconfig
@@ -117,7 +121,7 @@ commands:
       label: SSH access for OpenWRT
       component: qemu
       workingDir: ${PROJECTS_ROOT}
-      commandLine: ssh-keygen -R [localhost]:30022 && sshpass -p pass1234 ssh -o StrictHostKeyChecking=no root@localhost -p 30022
+      commandLine: ssh-keygen -R [localhost]:30022 || true && sshpass -p pass1234 ssh -o StrictHostKeyChecking=no root@localhost -p 30022
       group:
         kind: build
   - id: serverstart
