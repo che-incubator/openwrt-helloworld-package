@@ -29,12 +29,13 @@ RUN curl -fsSL ${NODE_BASE_URL}/node-${NODE_VERSION}-${NODE_DISTRO}.tar.gz -o no
 ENV VSCODE_NODEJS_RUNTIME_DIR=/usr/local/lib/nodejs/node-${NODE_VERSION}-${NODE_DISTRO}/bin
 ENV PATH=${VSCODE_NODEJS_RUNTIME_DIR}:$PATH
 
-RUN apt-get install -y npm \
+RUN apt-get install -y npm ssh sshpass \
     && npm install -g http-server
 
+WORKDIR /projects
 USER user
 
-# Install OpenWRT build dependencies
+# OpenWRT build
 ARG OPENWRT_BASE_URL='https://github.com/openwrt/openwrt'
 ARG OPENWRT_VERSION='21.02.3'
 
@@ -48,7 +49,6 @@ RUN cd /tmp/pre-install \
     && unzip "/tmp/pre-install/openwrt-${OPENWRT_VERSION}.zip" -d /tmp/pre-install \
     && rm -rf /tmp/pre-install/openwrt-${OPENWRT_VERSION}.zip \
     && cd /tmp/pre-install/openwrt-${OPENWRT_VERSION} \
-    && cp /tmp/pre-install/openwrt/.config /tmp/pre-install/openwrt-${OPENWRT_VERSION}/.config \
     && cp -r /tmp/pre-install/openwrt/package /tmp/pre-install/openwrt-${OPENWRT_VERSION}/package \
     && cd /tmp/pre-install/openwrt-${OPENWRT_VERSION} \
     && scripts/feeds update -a -f \
@@ -56,18 +56,19 @@ RUN cd /tmp/pre-install \
     && cp /tmp/pre-install/openwrt/.config /tmp/pre-install/openwrt-${OPENWRT_VERSION}/.config \
     && make defconfig \
     && make -j$(nproc) \
-    && mv bin ../openwrt \
+    && chmod -R 0777 /tmp/pre-install/openwrt-${OPENWRT_VERSION}/ \
+    && zip -r helloworld.zip build_dir/target-x86_64_musl/helloworld-1.0.1 || true \
+    && mv helloworld.zip ../openwrt || true \
+    && zip -r root-x86.zip staging_dir/target-x86_64_musl/root-x86 || true \
+    && mv root-x86.zip ../openwrt || true \
+    && zip -r x86_64-openwrt-linux-gdb.zip staging_dir/toolchain-x86_64_gcc-8.4.0_musl/bin/x86_64-openwrt-linux-gdb || true \
+    && mv x86_64-openwrt-linux-gdb.zip ../openwrt || true \
+    && zip -r bin.zip bin \
     && rm -r bin \
-    && mv build_dir ../openwrt \
-    && rm -r build_dir \
-    && mv dl ../openwrt \
-    && rm -r dl \
-    && mv feeds ../openwrt \
+    && mv bin.zip ../openwrt \
+    && zip -r feeds.zip feeds \
     && rm -r feeds \
-    && mv staging_dir ../openwrt \
-    && rm -r staging_dir \
-    && mv tmp ../openwrt \
-    && rm -r tmp \
+    && mv feeds.zip ../openwrt \
     && cd /tmp/pre-install \
     && rm -rf /tmp/pre-install/openwrt-${OPENWRT_VERSION}
 

@@ -2,20 +2,16 @@ FROM docker.io/library/alpine:3.19.1
 
 # Install QEMU, remove large unnecessary files
 RUN apk add --no-cache \
-        g++ \
         make \
         curl \
         make \
         qemu-chardev-spice \
         qemu-hw-display-virtio-vga \
-        qemu-hw-usb-redirect \
         qemu-img \
         qemu-system-x86_64 \
         qemu-ui-spice-core \
         socat \
         perl \
-        openssh \
-        sshpass \
         && \
     rm -f /usr/share/qemu/edk2-*
 
@@ -88,7 +84,7 @@ uci set firewall.@rule[-1].name="Allow-Admin" \n\
 uci set firewall.@rule[-1].enabled="true" \n\
 uci set firewall.@rule[-1].src="wan" \n\
 uci set firewall.@rule[-1].proto="tcp" \n\
-uci set firewall.@rule[-1].dest_port="22 80 443" \n\
+uci set firewall.@rule[-1].dest_port="22 80 443 9000" \n\
 uci set firewall.@rule[-1].target="ACCEPT" \n\
 uci commit firewall \n\
 \n\' > /usr/local/share/vmconfig/vm.d/20-firewall.sh && \
@@ -183,13 +179,6 @@ exec /usr/bin/qemu-system-x86_64 \\\n\
     -spice port=5900,password-secret=secvnc0 \\\n\
     -device intel-hda \\\n\
     -device hda-duplex \\\n\
-    -device ich9-usb-ehci1,id=usb \\\n\
-    -device ich9-usb-uhci1,masterbus=usb.0,firstport=0,multifunction=on \\\n\
-    -device ich9-usb-uhci2,masterbus=usb.0,firstport=2 \\\n\
-    -chardev spicevmc,name=usbredir,id=usbredirchardev1 \\\n\
-    -device usb-redir,chardev=usbredirchardev1,id=usbredirdev1 \\\n\
-    -chardev spicevmc,name=usbredir,id=usbredirchardev2 \\\n\
-    -device usb-redir,chardev=usbredirchardev2,id=usbredirdev2 \\\n\
     $QEMU_ARGS \\\n\
 \n' > /usr/local/bin/run-vm.sh && \
     chmod +x /usr/local/bin/run-vm.sh
@@ -220,14 +209,13 @@ ENV QEMU_STORAGE="1G"
 ENV QEMU_SMP="2"
 ENV QEMU_LAN_OPTIONS=""
 ENV QEMU_WAN_NETWORK="172.16.0.0/24"
-ENV QEMU_WAN_OPTIONS="hostfwd=tcp::39000-:9000,hostfwd=tcp::30022-:22,hostfwd=tcp::30080-:80,hostfwd=tcp::30443-:443,hostfwd=udp::51820-:51820"
+ENV QEMU_WAN_OPTIONS="hostfwd=tcp::30022-:22,hostfwd=tcp::30080-:80,hostfwd=tcp::30443-:443,hostfwd=udp::51820-:51820"
 ENV QEMU_PASSWORD="pass1234"
 ENV QEMU_CONFIG_TIMEOUT="300"
 ENV QEMU_CONFIG_NO_DEFAULTS=""
 ENV QEMU_HOSTNAME="OpenWrtVM"
 ENV QEMU_ARGS=""
 
-EXPOSE 39000/tcp
 EXPOSE 5900/tcp
 EXPOSE 30022/tcp
 EXPOSE 30080/tcp
@@ -237,6 +225,6 @@ EXPOSE 51820/udp
 HEALTHCHECK --interval=30s --timeout=30s --start-period=120s --retries=3 CMD [ "/usr/local/bin/healthcheck-vm.sh" ]
 VOLUME /var/lib/vmconfig
 VOLUME /var/lib/qemu
-WORKDIR /tmp
+WORKDIR /projects
 USER 1001
 CMD ["tail", "-f", "/dev/null"]
