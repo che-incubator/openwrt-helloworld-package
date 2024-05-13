@@ -1,5 +1,7 @@
 # OpenWrt HelloWorld package
 
+OpenWrt is a highly extensible GNU/Linux distribution for embedded devices (typically wireless routers). Unlike many other distributions for routers, OpenWrt is built from the ground up to be a full-featured, easily modifiable operating system for embedded devices. In practice, this means you can have all the features you need with no bloat, powered by a modern Linux kernel. It provides convenient tools to integrate pre-built packages into a custom firmware image. This repo includes a sample of the HelloWorld package for OpenWrt.
+
 ## Description
 
 This is the simple C++ OpenWrt package to print the phrase "Hello, World!" to the console.
