@@ -6,8 +6,12 @@ cp  /tmp/pre-install/openwrt/.config -d /projects/openwrt/.config
 unzip  /tmp/pre-install/openwrt/feeds.zip -d /projects/openwrt
 unzip  /tmp/pre-install/openwrt/bin.zip -d /projects/openwrt
 
-if [ -d /projects/openwrt-helloworld/output ]; then
-  rm -r /projects/openwrt-helloworld/output
+if [ -f /tmp/pre-install/openwrt/helloworld.zip ]; then
+  unzip  /tmp/pre-install/openwrt/helloworld.zip -d /projects/openwrt
+fi
+
+if [ -f /tmp/pre-install/openwrt/x86_64-openwrt-linux-gdb.zip ]; then
+  unzip  /tmp/pre-install/openwrt/x86_64-openwrt-linux-gdb.zip -d /projects/openwrt
 fi
 
 mkdir -p /projects/openwrt-helloworld/output

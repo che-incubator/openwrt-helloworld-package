@@ -39,7 +39,7 @@ components:
           name: luci
           protocol: https
           targetPort: 30080
-        - exposure: public
+        - exposure: internal
           name: ssh
           protocol: tcp
           targetPort: 30022
@@ -116,9 +116,17 @@ commands:
       commandLine: /usr/local/bin/prepare-and-run-vm.sh
       group:
         kind: build
+  - id: gdbsshaccess
+    exec:
+      label: GDB remote access OpenWRT via SSH
+      component: runtime
+      workingDir: ${PROJECTS_ROOT}/openwrt-helloworld
+      commandLine: scripts/start-ssh.sh
+      group:
+        kind: build
   - id: sshaccess
     exec:
-      label: SSH access for OpenWRT
+      label: Remote access OpenWRT via SSH
       component: qemu
       workingDir: ${PROJECTS_ROOT}
       commandLine: ssh-keygen -R [localhost]:30022 || true && sshpass -p pass1234 ssh -o StrictHostKeyChecking=no root@localhost -p 30022

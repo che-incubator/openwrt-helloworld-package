@@ -2,4 +2,4 @@
 
 set -e
 
-cd /bin/ && gdbserver localhost:9000 ./helloworld
+/bin/gdbserver localhost:9000 /bin/helloworld
