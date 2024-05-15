@@ -2,4 +2,4 @@
 
 set -e
 
-/projects/openwrt/scripts/remote-gdb localhost:39000 /projects/openwrt/build_dir/target-*/helloworld-*/helloworld
+cd /projects/openwrt/ && ./scripts/remote-gdb localhost:39000 ./build_dir/target-*/helloworld-*/helloworld

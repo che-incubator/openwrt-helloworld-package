@@ -1,0 +1,5 @@
+set sysroot /projects/openwrt/staging_dir/target-x86_64_musl/root-x86/
+target extended-remote localhost:39000
+set history filename /projects/openwrt/tmp/.gdb_history
+set history size 100000000
+set history save on

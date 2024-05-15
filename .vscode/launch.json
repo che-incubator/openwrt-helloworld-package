@@ -2,20 +2,16 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "(gdb) Attach",
-      "type": "cppdbg",
-      "request": "attach",
-      "program": "${path to binary}",
-      "processId": "${process id to attach to}",
-      "MIMode": "gdb",
-      "cwd":"${workspaceRoot}",
-      "setupCommands": [
-        {
-          "description": "Enable pretty-printing for gdb",
-          "text": "-enable-pretty-printing",
-          "ignoreFailures": true
-        }
-      ]
+      "name": "C/C++ Runner: Debug Session",
+      "type": "lldb",
+      "request": "launch",
+      "args": [
+        "-x",
+        "/projects/openwrt-helloworld/configs/gdb_config",
+        "/projects/openwrt/build_dir/target-x86_64_musl/helloworld-1.0.1/helloworld"
+      ],
+      "cwd": "/projects/openwrt-helloworld/package/helloworld/src",
+      "program": "/projects/openwrt/staging_dir/toolchain-x86_64_gcc-8.4.0_musl/bin/x86_64-openwrt-linux-gdb"
     }
   ]
 }
