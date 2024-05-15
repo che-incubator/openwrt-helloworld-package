@@ -2,16 +2,18 @@
   "version": "0.2.0",
   "configurations": [
     {
-      "name": "C/C++ Runner: Debug Session",
-      "type": "lldb",
-      "request": "launch",
-      "args": [
-        "-x",
-        "/projects/openwrt-helloworld/configs/gdb_config",
-        "/projects/openwrt/build_dir/target-x86_64_musl/helloworld-1.0.1/helloworld"
-      ],
+      "type": "gdb",
+      "request": "attach",
+      "name": "Attach to gdbserver",
+      "executable": "/projects/openwrt/build_dir/target-x86_64_musl/helloworld-1.0.1/helloworld",
+      "target": "localhost:39000",
+      "remote": true,
       "cwd": "/projects/openwrt-helloworld/package/helloworld/src",
-      "program": "/projects/openwrt/staging_dir/toolchain-x86_64_gcc-8.4.0_musl/bin/x86_64-openwrt-linux-gdb"
+      "printCalls": true,
+      "gdbpath": "/projects/openwrt/staging_dir/toolchain-x86_64_gcc-8.4.0_musl/bin/x86_64-openwrt-linux-gdb",
+      "autorun": [
+        "set sysroot /projects/openwrt/staging_dir/target-x86_64_musl/root-x86/"
+      ]
     }
   ]
 }

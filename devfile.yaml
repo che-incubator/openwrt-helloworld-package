@@ -73,7 +73,7 @@ commands:
       label: Copy diff-config to OpenWRT
       component: runtime
       workingDir: ${PROJECTS_ROOT}
-      commandLine: cp -f openwrt-helloworld/configs/.x86-generic.config openwrt/.config
+      commandLine: cp -f openwrt-helloworld/configs/.x86-generic.config openwrt/.config && cd openwrt && make defconfig
       group:
         kind: build
   - id: savedifconfig
@@ -114,22 +114,18 @@ commands:
       component: qemu
       workingDir: ${PROJECTS_ROOT}
       commandLine: /usr/local/bin/prepare-and-run-vm.sh
-      group:
-        kind: build
+  - id: gdbsshstart
+    exec:
+      label: Start remote GDB Server
+      component: runtime
+      workingDir: ${PROJECTS_ROOT}/openwrt-helloworld
+      commandLine: scripts/start-gdb-server.sh
   - id: gdbsshaccess
     exec:
-      label: GDB remote access OpenWRT via SSH
+      label: Remote access to OpenWRT via SSH
       component: runtime
       workingDir: ${PROJECTS_ROOT}/openwrt-helloworld
       commandLine: scripts/start-ssh.sh
-      group:
-        kind: build
-  - id: sshaccess
-    exec:
-      label: Remote access OpenWRT via SSH
-      component: qemu
-      workingDir: ${PROJECTS_ROOT}
-      commandLine: ssh-keygen -R [localhost]:30022 || true && sshpass -p pass1234 ssh -o StrictHostKeyChecking=no root@localhost -p 30022
       group:
         kind: build
   - id: serverstart
