@@ -72,8 +72,8 @@ commands:
     exec:
       label: Copy diff-config to OpenWRT
       component: runtime
-      workingDir: ${PROJECTS_ROOT}
-      commandLine: cp -f openwrt-helloworld/configs/.x86-generic.config openwrt/.config && cd openwrt && make defconfig
+      workingDir: ${PROJECTS_ROOT}/openwrt-helloworld
+      commandLine: scripts/copy-config.sh
       group:
         kind: build
   - id: savedifconfig
