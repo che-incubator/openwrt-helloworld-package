@@ -3,7 +3,7 @@
 
 # About OpenWrt HelloWorld package
 
-OpenWrt is a highly extensible GNU/Linux distribution for embedded devices (typically wireless routers). Unlike many other distributions for routers, OpenWrt is built from the ground up to be a full-featured, easily modifiable operating system for embedded devices. In practice, this means you can have all the features you need with no bloat, powered by a modern Linux kernel. It provides convenient tools to integrate pre-built packages into a custom firmware image. This repo includes a sample of the HelloWorld package for OpenWrt.
+OpenWrt is a highly extensible GNU/Linux distribution for embedded devices (typically wireless routers). Unlike many other distributions for routers, OpenWrt is built from the ground up to be a full-featured, easily modifiable operating system for embedded devices. You can have all the features you need with no bloat, powered by a modern Linux kernel. It provides convenient tools to integrate pre-built packages into a custom firmware image. This repo includes a sample of the custom package for OpenWrt.
 
 ## Description
 
@@ -19,8 +19,7 @@ make package/helloworld/compile V=s
 ## Development with Eclipse Che
 
 - Create and start a workspace from this repository.
-- Open the target workspace. Link HelloWorld package, configs and install all the necessary packages to build OpenWRT. We can do this by running the following tasks from the devfile.yaml file: `Link helloworld package`, `Copy diff-config to OpenWRT`, `Install all package definitions`.
-- Build OpenWRT by running the following task from the devfile.yaml file: `Build all packages and the kernel`.
+- Open the target workspace. We must install all package definitions, copy the .config file, and build all packages and the kernel. We can do this by running the following tasks from the [devfile](https://github.com/che-incubator/openwrt-helloworld-package/blob/main/devfile.yaml): `Install all package definitions`, `Copy diff-config to OpenWRT`, and `Build all packages and the kernel`.
 
 
 ## Builds
