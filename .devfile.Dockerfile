@@ -17,7 +17,7 @@ RUN apt-get update &&\
     echo 'user ALL=NOPASSWD: ALL' > /etc/sudoers.d/user
 
 # Install Node.js for che-code editor
-ARG NODE_VERSION=v20.0.0
+ARG NODE_VERSION=v20.16.0
 ARG NODE_DISTRO=linux-x64
 ARG NODE_BASE_URL=https://nodejs.org/dist/${NODE_VERSION}
 
